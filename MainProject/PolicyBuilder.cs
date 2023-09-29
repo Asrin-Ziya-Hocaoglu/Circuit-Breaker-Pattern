@@ -1,9 +1,10 @@
 ﻿using Polly;
 using Polly.Extensions.Http;
+using System.Net;
 
 namespace MainProject
 {
-    public class CircuitBreakerPolicy
+    public class PolicyBuilder
     {
         public void OnHalfOpen()
 
@@ -26,7 +27,6 @@ namespace MainProject
             Console.WriteLine($"Duration Of Break is : {durationOfBreak}");
             Console.WriteLine("Circuit cut, requests will not flow.");
             Console.WriteLine("\n--------------------------------------------------------------");
-
         }
 
         public IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
@@ -36,7 +36,20 @@ namespace MainProject
 
             .HandleTransientHttpError()
 
-            .CircuitBreakerAsync(3, TimeSpan.FromSeconds(10), onReset: OnReset, onBreak: OnBreak, onHalfOpen: OnHalfOpen);
+            .CircuitBreakerAsync(4, TimeSpan.FromSeconds(10), onReset: OnReset, onBreak: OnBreak, onHalfOpen: OnHalfOpen);
+        }
+
+        public IAsyncPolicy<HttpResponseMessage> GetRetryrPolicy(HttpStatusCode[] httpStatusCodes)
+
+        {
+            return HttpPolicyExtensions
+
+            .HandleTransientHttpError()
+            .OrResult(r => httpStatusCodes.Contains(r.StatusCode))
+            .RetryAsync(3, onRetry: (exception, retryCount) =>
+            {
+                Console.WriteLine($" Tekrar Deneniyor => Exception Thrown => : {exception.Exception.Message}");
+            });
         }
     }
 }
