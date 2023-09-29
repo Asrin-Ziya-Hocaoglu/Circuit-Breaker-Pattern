@@ -31,7 +31,7 @@ internal class Program
         builder.Services.AddHttpClient("providerApiClient", c =>
         {
             c.BaseAddress = new Uri("https://localhost:7099");
-        }).AddTransientHttpErrorPolicy(p => wrappedPolicy);
+        }).AddTransientHttpErrorPolicy(p => retryPolicy);
         builder.Services.AddHttpClient("providerApiBClient", c =>
         {
             c.BaseAddress = new Uri("https://localhost:7081");

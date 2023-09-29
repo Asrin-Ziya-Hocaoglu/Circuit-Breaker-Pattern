@@ -43,13 +43,13 @@ namespace MainProject
 
         {
             return HttpPolicyExtensions
-
             .HandleTransientHttpError()
             .OrResult(r => httpStatusCodes.Contains(r.StatusCode))
-            .RetryAsync(3, onRetry: (exception, retryCount) =>
-            {
-                Console.WriteLine($" Tekrar Deneniyor => Exception Thrown => : {exception.Exception.Message}");
-            });
+            .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(3, retryAttempt)),
+                (exception, timespan, retryAttempt, context) =>
+                {
+                    Console.WriteLine($"Retry #{retryAttempt} due to {exception.Exception.Message}. Waiting for {timespan.TotalSeconds} seconds.");
+                });
         }
     }
 }
